@@ -23,17 +23,18 @@ Creates a new directory, initializes git, writes all files, runs `go mod tidy`, 
 
 ```
 goscaffold init backflow --cli
-goscaffold init helm-sync --controller
-goscaffold init kubecracker --cli --controller
+goscaffold init helm-sync --controller --helm
+goscaffold init kubecracker --cli --controller --helm
 goscaffold init backflow --cli --module github.com/jholm117/backflow
 ```
 
 Flags:
 - `--module <path>` — Go module path. Defaults to `github.com/jholm117/<project-name>`.
 - `--cli` — include CLI distribution layer (GoReleaser, Homebrew tap, release workflow)
-- `--controller` — include K8s controller layer (Dockerfile, docker targets, kind e2e scaffolding)
+- `--controller` — include K8s controller layer (Dockerfile, docker targets, kind e2e, controller-runtime reconciler skeleton)
+- `--helm` — include Helm chart scaffolding (chart layout, templates, values, RBAC, security context per helm-standards.md)
 
-At least one of `--cli` or `--controller` is required.
+At least one of `--cli`, `--controller`, or `--helm` is required. Flags are composable — `--cli --controller --helm` includes everything.
 
 ### `goscaffold add <layer>`
 
@@ -42,33 +43,45 @@ Runs inside an existing project directory. Adds files for the specified layer. S
 ```
 cd ~/wip-repos/backflow
 goscaffold add controller
+goscaffold add helm
 ```
 
-Layers: `cli`, `controller`.
+Layers: `cli`, `controller`, `helm`.
 
 ## File Generation Matrix
 
-| File | Base | `cli` | `controller` |
-|---|---|---|---|
-| `cmd/<name>/main.go` | x | | |
-| `go.mod` | x | | |
-| `internal/.gitkeep` | x | | |
-| `pkg/.gitkeep` | x | | |
-| `Makefile` | x | merged | merged |
-| `.golangci.yml` | x | | |
-| `.gitignore` | x | | |
-| `hack/ci-checks.sh` | x | | |
-| `.githooks/pre-push` | x | | |
-| `.github/workflows/ci.yml` | x | | |
-| `AGENTS.md` | x | | |
-| `README.md` | x | | |
-| `.goreleaser.yaml` | | x | |
-| `.github/workflows/release.yml` | | x | |
-| `Dockerfile` | | | x |
-| `.dockerignore` | | | x |
-| `hack/e2e-up.sh` | | | x |
-| `hack/e2e-down.sh` | | | x |
-| `hack/kind-config.yaml` | | | x |
+| File | Base | `cli` | `controller` | `helm` |
+|---|---|---|---|---|
+| `cmd/<name>/main.go` | x | | | |
+| `go.mod` | x | | | |
+| `internal/.gitkeep` | x | | | |
+| `pkg/.gitkeep` | x | | | |
+| `Makefile` | x | merged | merged | merged |
+| `.golangci.yml` | x | | | |
+| `.gitignore` | x | | | |
+| `hack/ci-checks.sh` | x | | | |
+| `.githooks/pre-push` | x | | | |
+| `.github/workflows/ci.yml` | x | | | |
+| `AGENTS.md` | x | | | |
+| `README.md` | x | | | |
+| `.goreleaser.yaml` | | x | | |
+| `.github/workflows/release.yml` | | x | | |
+| `Dockerfile` | | | x | |
+| `.dockerignore` | | | x | |
+| `internal/controller/reconciler.go` | | | x | |
+| `hack/e2e-up.sh` | | | x | |
+| `hack/e2e-down.sh` | | | x | |
+| `hack/kind-config.yaml` | | | x | |
+| `charts/<name>/Chart.yaml` | | | | x |
+| `charts/<name>/values.yaml` | | | | x |
+| `charts/<name>/.helmignore` | | | | x |
+| `charts/<name>/templates/_helpers.tpl` | | | | x |
+| `charts/<name>/templates/NOTES.txt` | | | | x |
+| `charts/<name>/templates/deployment.yaml` | | | | x |
+| `charts/<name>/templates/service.yaml` | | | | x |
+| `charts/<name>/templates/serviceaccount.yaml` | | | | x |
+| `charts/<name>/templates/clusterrole.yaml` | | | | x |
+| `charts/<name>/templates/clusterrolebinding.yaml` | | | | x |
 
 ## Makefile Merging
 
@@ -76,8 +89,9 @@ The Makefile is the one file where content from multiple layers combines into a 
 
 - `cli` adds: `release-snapshot` target, `GORELEASER_VERSION` variable, `goreleaser` tool install
 - `controller` adds: `docker-build`, `docker-push`, `e2e`, `e2e-up`, `e2e-down` targets, `IMG` variable
+- `helm` adds: `helm-lint`, `helm-template` targets
 
-The `add` command reads the existing Makefile and appends the new layer's section. It detects whether a layer's targets are already present by checking for a sentinel comment (e.g., `## CLI Targets` or `## Controller Targets`).
+The `add` command reads the existing Makefile and appends the new layer's section. It detects whether a layer's targets are already present by checking for a sentinel comment (e.g., `## CLI Targets`, `## Controller Targets`, `## Helm Targets`).
 
 ## Template Parameters
 
@@ -87,6 +101,7 @@ type Params struct {
     Module      string // e.g. "github.com/jholm117/backflow"
     CLI         bool
     Controller  bool
+    Helm        bool
 }
 ```
 
@@ -122,13 +137,26 @@ goscaffold/
 │   │       │   ├── goreleaser.yaml.tmpl
 │   │       │   ├── release.yml.tmpl
 │   │       │   └── makefile-cli.tmpl
-│   │       └── controller/
-│   │           ├── Dockerfile.tmpl
-│   │           ├── dockerignore.tmpl
-│   │           ├── e2e-up.sh.tmpl
-│   │           ├── e2e-down.sh.tmpl
-│   │           ├── kind-config.yaml.tmpl
-│   │           └── makefile-controller.tmpl
+│   │       ├── controller/
+│   │       │   ├── Dockerfile.tmpl
+│   │       │   ├── dockerignore.tmpl
+│   │       │   ├── reconciler.go.tmpl
+│   │       │   ├── e2e-up.sh.tmpl
+│   │       │   ├── e2e-down.sh.tmpl
+│   │       │   ├── kind-config.yaml.tmpl
+│   │       │   └── makefile-controller.tmpl
+│   │       └── helm/
+│   │           ├── Chart.yaml.tmpl
+│   │           ├── values.yaml.tmpl
+│   │           ├── helmignore.tmpl
+│   │           ├── helpers.tpl.tmpl
+│   │           ├── NOTES.txt.tmpl
+│   │           ├── deployment.yaml.tmpl
+│   │           ├── service.yaml.tmpl
+│   │           ├── serviceaccount.yaml.tmpl
+│   │           ├── clusterrole.yaml.tmpl
+│   │           ├── clusterrolebinding.yaml.tmpl
+│   │           └── makefile-helm.tmpl
 │   └── makefile/
 │       ├── merge.go             # Append layer sections to existing Makefile
 │       └── merge_test.go
@@ -169,7 +197,10 @@ All generated files follow the standards defined in `~/.claude/go-standards.md` 
 - **Release workflow** (cli): triggers on `v*` tags, uses `goreleaser/goreleaser-action@v6`
 - **Dockerfile** (controller): multi-stage, `golang:1.25-alpine` builder, `gcr.io/distroless/static:nonroot` runtime, `CGO_ENABLED=0`, `-trimpath`, `-s -w` ldflags
 - **.dockerignore** (controller): excludes `.git`, `.github`, `.githooks`, `.worktrees`, `bin/`, `dist/`
+- **controller-runtime reconciler** (controller): `internal/controller/reconciler.go` with a skeleton `Reconcile()` method, manager setup in `main.go`, controller-runtime dependency in `go.mod`. Compatible with layering kubebuilder on top later for CRD-based controllers.
 - **kind e2e scripts** (controller): idempotent `e2e-up.sh` (create cluster, build image, load, deploy), `e2e-down.sh` (delete cluster), `kind-config.yaml` (single control-plane)
+- **Helm chart** (helm): `charts/<name>/` with `Chart.yaml`, `values.yaml`, `.helmignore`, and templates for deployment, service, serviceaccount, clusterrole, clusterrolebinding, `_helpers.tpl`, `NOTES.txt`. Follows `~/.claude/helm-standards.md`: standard labels, hardened pod security context (`runAsNonRoot`, `readOnlyRootFilesystem`, `drop ALL`), resource defaults, liveness/readiness probe stubs, RBAC with explicit verbs, `http-metrics` port on service.
+- **Helm Makefile targets** (helm): `helm-lint` runs `helm lint`, `helm-template` renders and validates with `kubeconform`
 
 ## Testing
 
@@ -182,13 +213,14 @@ Test template rendering in isolation. Given `Params`, assert rendered output mat
 
 ### Integration Tests
 
-One test per mode (`--cli`, `--controller`, `--cli --controller`):
+One test per flag combination (`--cli`, `--controller`, `--helm`, `--cli --controller --helm`):
 
 1. Run `init` into `t.TempDir()`
 2. Assert all expected files exist
 3. Assert `go build ./...` succeeds
 4. Assert `go vet ./...` passes
 5. Assert `make lint-config` passes (validates generated `.golangci.yml`)
+6. For `--helm`: assert `helm lint charts/<name>` passes
 
 ### Add Tests
 
@@ -201,6 +233,10 @@ One test per mode (`--cli`, `--controller`, `--cli --controller`):
 ### No E2E for Heavy Dependencies
 
 No tests that run `kind`, `goreleaser`, `docker build`, or `brew`. Those depend on external tools. The integration tests prove the generated project is valid and buildable.
+
+## Kubebuilder Compatibility
+
+The `--controller` layer produces a project that is compatible with kubebuilder. When a project needs custom CRDs, run `kubebuilder init` and `kubebuilder create api` on top of the scaffolded project. goscaffold does not replicate kubebuilder's code generation — kubebuilder handles CRD types, DeepCopy, RBAC manifests, and webhook scaffolding. goscaffold handles everything else: CI/hook parity, Makefile tool pattern, linting, Docker build, Helm chart, e2e infra.
 
 ## Distribution
 
