@@ -234,9 +234,29 @@ One test per flag combination (`--cli`, `--controller`, `--helm`, `--cli --contr
 
 No tests that run `kind`, `goreleaser`, `docker build`, or `brew`. Those depend on external tools. The integration tests prove the generated project is valid and buildable.
 
-## Kubebuilder Compatibility
+## CRD Controllers: Out of Scope
 
-The `--controller` layer produces a project that is compatible with kubebuilder. When a project needs custom CRDs, run `kubebuilder init` and `kubebuilder create api` on top of the scaffolded project. goscaffold does not replicate kubebuilder's code generation — kubebuilder handles CRD types, DeepCopy, RBAC manifests, and webhook scaffolding. goscaffold handles everything else: CI/hook parity, Makefile tool pattern, linting, Docker build, Helm chart, e2e infra.
+CRD-based controllers (custom types, deepcopy, CRD YAML generation) are out of scope for v1. This section documents the research and decision.
+
+### K8s Controller Tooling Landscape
+
+| Tool | What it is | When to use |
+|---|---|---|
+| **controller-runtime** | Go library (manager, reconciler, client) | Always — the runtime for all Go controllers |
+| **controller-gen** | Standalone code generation CLI (CRD YAML, deepcopy, RBAC from markers) | When you have CRDs — no kubebuilder dependency required |
+| **kubebuilder** | Project scaffolding tool (kubernetes-sigs) | Full CRD-based operator project from scratch |
+| **Operator SDK** | Wraps kubebuilder + adds Ansible/Helm operators + OLM | When you need OLM integration or non-Go operators |
+
+### Key Findings
+
+- **Kubebuilder supports non-CRD controllers** via `kubebuilder create api --resource=false`, but it's buggy — [issue #5097](https://github.com/kubernetes-sigs/kubebuilder/issues/5097) documents broken references to non-existent CRD dirs requiring manual cleanup. Not a first-class path.
+- **For non-CRD controllers, the standard approach is controller-runtime directly** — no scaffolding tool. The controller-runtime repo has a canonical `examples/builtins/` example. This is what goscaffold's `--controller` flag provides.
+- **controller-gen is standalone** — any project can use it directly in a Makefile without kubebuilder. It generates CRD YAML, RBAC ClusterRoles, DeepCopy methods, webhook config, schemapatch, and apply-configuration from Go marker annotations.
+- **The ecosystem has converged**: controller-runtime as the library, kubebuilder as the CRD scaffolding tool, controller-gen as the code generation tool. No serious alternatives in the Go space (KUDO is dead, Metacontroller is polyglot/webhook-based).
+
+### Why Out of Scope
+
+goscaffold fills the gaps where no canonical tooling exists: CLIs, non-CRD controllers, and the surrounding infrastructure (CI, Makefile, linting, Helm charts). For CRD controllers, kubebuilder is the canonical tool — replicating it would be reinventing the wheel. A future `goscaffold augment` command could layer standards onto an existing kubebuilder project, but that's a v2 concern.
 
 ## Distribution
 
