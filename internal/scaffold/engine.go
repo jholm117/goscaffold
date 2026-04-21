@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -15,6 +16,14 @@ type Params struct {
 	CLI         bool
 	Controller  bool
 	Helm        bool
+}
+
+func (p Params) OwnerRepo() string {
+	parts := strings.SplitN(p.Module, "/", 2)
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return p.Module
 }
 
 func RenderTemplate(name, text string, params Params) (string, error) {

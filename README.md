@@ -1,5 +1,8 @@
 # goscaffold
 
+[![CI](https://github.com/jholm117/goscaffold/actions/workflows/ci.yml/badge.svg)](https://github.com/jholm117/goscaffold/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/jholm117/goscaffold)](https://github.com/jholm117/goscaffold/releases/latest)
+
 Scaffold Go projects with composable layers (CLI, K8s controller, Helm chart) following consistent engineering standards.
 
 ## Install
