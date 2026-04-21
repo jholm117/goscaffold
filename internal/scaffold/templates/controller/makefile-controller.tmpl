@@ -1,0 +1,23 @@
+## Controller Targets
+
+IMG ?= {{.ProjectName}}:latest
+
+.PHONY: docker-build
+docker-build: ## Build Docker image.
+	docker build -t $(IMG) .
+
+.PHONY: docker-push
+docker-push: ## Push Docker image.
+	docker push $(IMG)
+
+.PHONY: e2e
+e2e: e2e-up ## Run E2E tests against kind cluster.
+	go test ./test/e2e/ -v -tags e2e -timeout 10m
+
+.PHONY: e2e-up
+e2e-up: ## Bootstrap kind cluster for E2E tests.
+	hack/e2e-up.sh
+
+.PHONY: e2e-down
+e2e-down: ## Delete kind E2E cluster.
+	hack/e2e-down.sh
