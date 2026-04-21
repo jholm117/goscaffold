@@ -59,6 +59,9 @@ help: ## Show this help.
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 GOVULNCHECK = $(LOCALBIN)/govulncheck
 
+.PHONY: tools
+tools: $(GOLANGCI_LINT) $(GOVULNCHECK) ## Install all tool dependencies.
+
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCI_LINT)
 $(GOLANGCI_LINT): $(LOCALBIN)

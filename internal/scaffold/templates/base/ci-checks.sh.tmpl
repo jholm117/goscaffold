@@ -44,6 +44,8 @@ run_govulncheck() {
 run_tidy_check || { echo "FAIL: go mod tidy"; exit 1; }
 
 if [ "$parallel" = true ]; then
+    echo "==> installing tools before parallel run"
+    make tools
     echo "==> running checks in parallel"
     run_lint &
     lint_pid=$!
