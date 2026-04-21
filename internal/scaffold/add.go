@@ -73,9 +73,9 @@ func DetectProject(dir string) (Params, error) {
 	}
 
 	var module string
-	for _, line := range strings.Split(string(goMod), "\n") {
-		if strings.HasPrefix(line, "module ") {
-			module = strings.TrimPrefix(line, "module ")
+	for line := range strings.SplitSeq(string(goMod), "\n") {
+		if mod, ok := strings.CutPrefix(line, "module "); ok {
+			module = mod
 			break
 		}
 	}

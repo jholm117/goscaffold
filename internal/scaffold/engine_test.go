@@ -41,7 +41,7 @@ func TestWriteFile_CreatesNewFile(t *testing.T) {
 func TestWriteFile_SkipsExisting(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "file.txt")
-	os.WriteFile(path, []byte("original"), 0o644)
+	_ = os.WriteFile(path, []byte("original"), 0o644)
 	written, err := WriteFile(path, "new content", 0o644)
 	if err != nil {
 		t.Fatalf("WriteFile: %v", err)

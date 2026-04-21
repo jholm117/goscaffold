@@ -24,7 +24,8 @@ func TestAdd_Controller(t *testing.T) {
 		t.Fatal("Dockerfile should not exist before add")
 	}
 
-	if err := Add(dir, "controller", Params{ProjectName: "proj", Module: "github.com/test/proj", Controller: true}); err != nil {
+	addParams := Params{ProjectName: "proj", Module: "github.com/test/proj", Controller: true}
+	if err := Add(dir, "controller", addParams); err != nil {
 		t.Fatalf("Add controller: %v", err)
 	}
 
