@@ -91,8 +91,23 @@ func newAddCmd() *cobra.Command {
 		Args:      cobra.ExactArgs(1),
 		ValidArgs: []string{"cli", "controller", "helm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("add not implemented")
-			return nil
+			layer := args[0]
+
+			params, err := scaffold.DetectProject(".")
+			if err != nil {
+				return err
+			}
+
+			switch layer {
+			case "cli":
+				params.CLI = true
+			case "controller":
+				params.Controller = true
+			case "helm":
+				params.Helm = true
+			}
+
+			return scaffold.Add(".", layer, params)
 		},
 	}
 }
