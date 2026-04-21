@@ -93,6 +93,18 @@ The Makefile is the one file where content from multiple layers combines into a 
 
 The `add` command reads the existing Makefile and appends the new layer's section. It detects whether a layer's targets are already present by checking for a sentinel comment (e.g., `## CLI Targets`, `## Controller Targets`, `## Helm Targets`).
 
+## Configuration
+
+goscaffold reads `~/.config/goscaffold/config.yaml` for user-level settings:
+
+```yaml
+module_prefix: github.com/jholm117
+homebrew_tap_token: "<fine-grained PAT with contents:write on homebrew-tap repo>"
+```
+
+- `module_prefix` — default Go module prefix. `--module` defaults to `<module_prefix>/<project-name>` if omitted.
+- `homebrew_tap_token` — GitHub PAT for pushing Homebrew formulas. When `init --cli` creates a repo, goscaffold runs `gh secret set HOMEBREW_TAP_GITHUB_TOKEN` using this token automatically.
+
 ## Template Parameters
 
 ```go
