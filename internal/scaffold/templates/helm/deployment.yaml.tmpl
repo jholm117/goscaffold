@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{"{{"}} include "{{.ProjectName}}.fullname" . {{"}}"}}
+  labels:
+    {{"{{"}}- include "{{.ProjectName}}.labels" . | nindent 4 {{"}}"}}
+spec:
+  replicas: {{"{{"}} .Values.replicaCount {{"}}"}}
+  selector:
+    matchLabels:
+      {{"{{"}}- include "{{.ProjectName}}.selectorLabels" . | nindent 6 {{"}}"}}
+  template:
+    metadata:
+      labels:
+        {{"{{"}}- include "{{.ProjectName}}.selectorLabels" . | nindent 8 {{"}}"}}
+    spec:
+      serviceAccountName: {{"{{"}} include "{{.ProjectName}}.serviceAccountName" . {{"}}"}}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{"{{"}} .Chart.Name {{"}}"}}
+          image: "{{"{{"}} .Values.image.repository {{"}}"}}:{{"{{"}} .Values.image.tag | default .Chart.AppVersion {{"}}"}}"
+          imagePullPolicy: {{"{{"}} .Values.image.pullPolicy {{"}}"}}
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http-metrics
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http-metrics
+          resources:
+            {{"{{"}}- toYaml .Values.resources | nindent 12 {{"}}"}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 65532

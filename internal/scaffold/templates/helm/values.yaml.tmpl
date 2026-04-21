@@ -1,0 +1,35 @@
+# -- Number of replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: {{.ProjectName}}
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag (defaults to chart appVersion)
+  tag: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name (generated if empty)
+  name: ""
+
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding
+  create: true
+
+service:
+  # -- Service port for metrics
+  port: 8080
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+serviceMonitor:
+  # -- Create a ServiceMonitor (requires Prometheus Operator CRD)
+  enabled: false

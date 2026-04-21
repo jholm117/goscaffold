@@ -1,0 +1,9 @@
+## Helm Targets
+
+.PHONY: helm-lint
+helm-lint: ## Lint Helm chart.
+	helm lint charts/{{.ProjectName}}
+
+.PHONY: helm-template
+helm-template: ## Render Helm chart templates.
+	helm template release charts/{{.ProjectName}}
