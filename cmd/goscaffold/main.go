@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/jholm117/goscaffold/internal/config"
 	"github.com/jholm117/goscaffold/internal/scaffold"
@@ -56,9 +58,15 @@ func newInitCmd() *cobra.Command {
 				module = prefix + "/" + name
 			}
 
+			goVersion, err := detectGoVersion()
+			if err != nil {
+				return fmt.Errorf("detect Go version: %w", err)
+			}
+
 			params := scaffold.Params{
 				ProjectName: name,
 				Module:      module,
+				GoVersion:   goVersion,
 				CLI:         cli,
 				Controller:  controller,
 				Helm:        helm,
@@ -110,4 +118,13 @@ func newAddCmd() *cobra.Command {
 			return scaffold.Add(".", layer, params)
 		},
 	}
+}
+
+func detectGoVersion() (string, error) {
+	out, err := exec.Command("go", "env", "GOVERSION").Output()
+	if err != nil {
+		return "", err
+	}
+	v := strings.TrimSpace(string(out))
+	return strings.TrimPrefix(v, "go"), nil
 }
