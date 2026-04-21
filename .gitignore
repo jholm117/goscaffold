@@ -1,1 +1,9 @@
 .worktrees/
+bin/
+dist/
+testbin/
+.idea/
+*.swp
+*.swo
+*~
+cover.out
