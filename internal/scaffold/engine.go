@@ -13,7 +13,6 @@ import (
 type Params struct {
 	ProjectName string
 	Module      string
-	GoVersion   string
 	CLI         bool
 	Controller  bool
 	Helm        bool
