@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/jholm117/goscaffold/internal/config"
+	"github.com/jholm117/goscaffold/internal/scaffold"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +33,47 @@ func newInitCmd() *cobra.Command {
 		Short: "Create a new Go project",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("init not implemented")
+			name := args[0]
+			cli, _ := cmd.Flags().GetBool("cli")
+			controller, _ := cmd.Flags().GetBool("controller")
+			helm, _ := cmd.Flags().GetBool("helm")
+
+			if !cli && !controller && !helm {
+				return fmt.Errorf("at least one of --cli, --controller, or --helm is required")
+			}
+
+			cfg, err := config.Load()
+			if err != nil {
+				return fmt.Errorf("load config: %w", err)
+			}
+
+			module, _ := cmd.Flags().GetString("module")
+			if module == "" {
+				prefix := cfg.ModulePrefix
+				if prefix == "" {
+					return fmt.Errorf("--module is required (or set module_prefix in ~/.config/goscaffold/config.yaml)")
+				}
+				module = prefix + "/" + name
+			}
+
+			params := scaffold.Params{
+				ProjectName: name,
+				Module:      module,
+				CLI:         cli,
+				Controller:  controller,
+				Helm:        helm,
+			}
+
+			targetDir := filepath.Join(".", name)
+			if err := scaffold.Init(targetDir, params); err != nil {
+				return err
+			}
+
+			fmt.Printf("\nProject %s created successfully.\n", name)
+			fmt.Println("Next steps:")
+			fmt.Printf("  cd %s\n", name)
+			fmt.Println("  git init && git add -A && git commit -m 'Initial commit'")
+			fmt.Println("  make setup-hooks")
 			return nil
 		},
 	}
