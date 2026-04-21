@@ -7,7 +7,8 @@ import (
 
 func TestPatchBadges_InsertWhenNone(t *testing.T) {
 	content := "# myproject\n\nSome description.\n\n## Getting Started\n"
-	badges := "[![CI](https://example.com/ci.svg)](https://example.com/ci)\n[![Release](https://example.com/release.svg)](https://example.com/release)"
+	badges := "[![CI](https://example.com/ci.svg)](https://example.com/ci)\n" +
+		"[![Release](https://example.com/release.svg)](https://example.com/release)"
 
 	result := PatchBadges(content, badges)
 
@@ -42,7 +43,10 @@ func TestPatchBadges_ReplaceExisting(t *testing.T) {
 }
 
 func TestPatchBadges_PreserveContentBelow(t *testing.T) {
-	content := "# myproject\n\n[![Old](https://old.svg)](https://old)\n[![Old2](https://old2.svg)](https://old2)\n\nDescription here.\n\n## Section\n\nMore content.\n"
+	content := "# myproject\n\n" +
+		"[![Old](https://old.svg)](https://old)\n" +
+		"[![Old2](https://old2.svg)](https://old2)\n\n" +
+		"Description here.\n\n## Section\n\nMore content.\n"
 	badges := "[![New](https://new.svg)](https://new)"
 
 	result := PatchBadges(content, badges)

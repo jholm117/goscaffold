@@ -114,7 +114,8 @@ func TestReplaceDefine(t *testing.T) {
 }
 
 func TestReplaceSpecialTarget(t *testing.T) {
-	content := "$(GOLANGCI_LINT): $(LOCALBIN)\n\t$(call go-install-tool,old)\n\n$(GOVULNCHECK): $(LOCALBIN)\n\t$(call go-install-tool,other)\n"
+	content := "$(GOLANGCI_LINT): $(LOCALBIN)\n\t$(call go-install-tool,old)\n\n" +
+		"$(GOVULNCHECK): $(LOCALBIN)\n\t$(call go-install-tool,other)\n"
 
 	replacement := "$(GOLANGCI_LINT): $(LOCALBIN)\n\t$(call go-install-tool,new)"
 

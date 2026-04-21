@@ -21,6 +21,7 @@ func main() {
 
 	root.AddCommand(newInitCmd())
 	root.AddCommand(newAddCmd())
+	root.AddCommand(newUpgradeCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -110,4 +111,18 @@ func newAddCmd() *cobra.Command {
 			return scaffold.Add(".", layer, params)
 		},
 	}
+}
+
+func newUpgradeCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "upgrade",
+		Short: "Upgrade managed files to latest templates",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dryRun, _ := cmd.Flags().GetBool("dry-run")
+			return scaffold.Upgrade(".", dryRun)
+		},
+	}
+	cmd.Flags().Bool("dry-run", false, "Print what would change without writing")
+	return cmd
 }
