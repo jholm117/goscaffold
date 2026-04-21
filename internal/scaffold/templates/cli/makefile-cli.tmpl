@@ -1,0 +1,14 @@
+## CLI Targets
+
+GORELEASER_VERSION ?= v2.8.2
+
+.PHONY: release-snapshot
+release-snapshot: goreleaser ## Build release snapshot (no publish).
+	"$(GORELEASER)" release --snapshot --clean
+
+GORELEASER = $(LOCALBIN)/goreleaser
+
+.PHONY: goreleaser
+goreleaser: $(GORELEASER)
+$(GORELEASER): $(LOCALBIN)
+	$(call go-install-tool,$(GORELEASER),github.com/goreleaser/goreleaser/v2,$(GORELEASER_VERSION))
