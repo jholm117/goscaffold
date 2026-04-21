@@ -1,0 +1,26 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+var version = "dev"
+
+func main() {
+	root := &cobra.Command{
+		Use:     "{{.ProjectName}}",
+		Short:   "{{.ProjectName}} does things",
+		Version: version,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("hello from {{.ProjectName}}")
+			return nil
+		},
+	}
+
+	if err := root.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
