@@ -64,6 +64,7 @@ func Upgrade(targetDir string, dryRun bool) error {
 	}
 
 	layers := DetectLayers(targetDir)
+	params.GoVersion = GoVersion
 	params.CLI = layers.CLI
 	params.Controller = layers.Controller
 	params.Helm = layers.Helm

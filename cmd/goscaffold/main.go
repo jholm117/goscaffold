@@ -60,6 +60,7 @@ func newInitCmd() *cobra.Command {
 			params := scaffold.Params{
 				ProjectName: name,
 				Module:      module,
+				GoVersion:   scaffold.GoVersion,
 				CLI:         cli,
 				Controller:  controller,
 				Helm:        helm,
