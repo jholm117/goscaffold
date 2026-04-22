@@ -135,9 +135,7 @@ func upgradeOverwriteFiles(targetDir string, params Params, layers Layers, dryRu
 	}
 
 	if layers.Helm {
-		for _, spec := range HelmSpecs(params) {
-			specs = append(specs, overwriteSpec{spec.TemplatePath, spec.OutputPath, spec.Perm})
-		}
+		fmt.Println("  skip      charts/ (project-specific)")
 	}
 
 	for _, spec := range specs {
