@@ -211,3 +211,37 @@ func TestUpgrade_DryRun(t *testing.T) {
 		t.Error("dry-run should not modify files")
 	}
 }
+
+func TestUpgrade_BumpsGoVersion(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "proj")
+	params := Params{
+		ProjectName: "proj",
+		Module:      "github.com/test/proj",
+		CLI:         true,
+	}
+	if err := Init(dir, params); err != nil {
+		t.Fatalf("Init: %v", err)
+	}
+
+	goModPath := filepath.Join(dir, "go.mod")
+	content, _ := os.ReadFile(goModPath)
+	old := strings.Replace(string(content), "go 1.26.2", "go 1.24.2", 1)
+	if err := os.WriteFile(goModPath, []byte(old), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := Upgrade(dir, false); err != nil {
+		t.Fatalf("Upgrade: %v", err)
+	}
+
+	updated, _ := os.ReadFile(goModPath)
+	if !strings.Contains(string(updated), "go 1.26.2") {
+		t.Error("go.mod should be bumped to 1.26.2")
+	}
+	if strings.Contains(string(updated), "go 1.24.2") {
+		t.Error("old Go version should be gone")
+	}
+	if !strings.Contains(string(updated), "module github.com/test/proj") {
+		t.Error("module path should be preserved")
+	}
+}

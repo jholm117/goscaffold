@@ -11,6 +11,8 @@ import (
 	"github.com/jholm117/goscaffold/internal/markdown"
 )
 
+const GoVersion = "1.26.2"
+
 // Layers represents which optional layers are detected in a project.
 type Layers struct {
 	CLI        bool
@@ -89,6 +91,10 @@ func Upgrade(targetDir string, dryRun bool) error {
 		return err
 	}
 
+	if err := upgradeGoMod(targetDir, dryRun); err != nil {
+		return err
+	}
+
 	if err := upgradeMakefile(targetDir, params, layers, dryRun); err != nil {
 		return err
 	}
@@ -102,6 +108,42 @@ func Upgrade(targetDir string, dryRun bool) error {
 	}
 
 	fmt.Println("\nDone. Review changes with: git diff")
+	return nil
+}
+
+func upgradeGoMod(targetDir string, dryRun bool) error {
+	goModPath := filepath.Join(targetDir, "go.mod")
+	content, err := os.ReadFile(goModPath)
+	if err != nil {
+		return nil
+	}
+
+	lines := strings.Split(string(content), "\n")
+	changed := false
+	for i, line := range lines {
+		if strings.HasPrefix(line, "go ") {
+			want := "go " + GoVersion
+			if line != want {
+				lines[i] = want
+				changed = true
+			}
+			break
+		}
+	}
+
+	if !changed {
+		return nil
+	}
+
+	if dryRun {
+		fmt.Println("  gomod     go.mod (go " + GoVersion + ")")
+		return nil
+	}
+
+	if err := os.WriteFile(goModPath, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+		return fmt.Errorf("write go.mod: %w", err)
+	}
+	fmt.Println("  gomod     go.mod (go " + GoVersion + ")")
 	return nil
 }
 
