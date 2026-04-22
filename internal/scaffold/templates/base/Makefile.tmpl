@@ -46,6 +46,10 @@ setup-hooks: ## Install git hooks.
 	@git config core.hooksPath .githooks
 	@echo "Installed hooks via core.hooksPath -> .githooks/"
 
+.PHONY: scaffold-upgrade
+scaffold-upgrade: ## Upgrade infrastructure to latest goscaffold patterns.
+	go run github.com/jholm117/goscaffold@latest upgrade
+
 .PHONY: clean
 clean: ## Remove build artifacts.
 	rm -rf bin/ dist/ cover.out

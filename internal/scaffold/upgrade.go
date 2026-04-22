@@ -247,7 +247,7 @@ func upgradeMakefile(targetDir string, params Params, layers Layers, dryRun bool
 	// Replace managed targets.
 	managedTargets := []string{
 		"build", "install", "test", "lint", "lint-fix", "lint-config",
-		"fmt", "vet", "govulncheck", "setup-hooks", "clean", "help", "tools",
+		"fmt", "vet", "govulncheck", "setup-hooks", "scaffold-upgrade", "clean", "help", "tools",
 		"golangci-lint", "goreleaser",
 	}
 	if layers.CLI {
