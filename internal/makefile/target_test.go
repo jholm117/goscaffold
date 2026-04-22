@@ -135,6 +135,41 @@ e2e-all: e2e-up e2e ## Run all E2E.
 	}
 }
 
+func TestInsertTarget(t *testing.T) {
+	content := `.PHONY: build
+build: ## Build.
+	go build ./...
+
+.PHONY: clean
+clean: ## Clean.
+	rm -rf bin/
+
+.PHONY: golangci-lint
+golangci-lint: $(GOLANGCI_LINT)
+`
+	target := ".PHONY: tools\ntools: $(GOLANGCI_LINT) $(GOVULNCHECK) ## Install all tool dependencies.\n"
+
+	result := InsertTarget(content, target, ".PHONY: golangci-lint")
+	if !strings.Contains(result, ".PHONY: tools") {
+		t.Error("tools target should be inserted")
+	}
+	toolsIdx := strings.Index(result, ".PHONY: tools")
+	lintIdx := strings.Index(result, ".PHONY: golangci-lint")
+	if toolsIdx > lintIdx {
+		t.Error("tools should be inserted before golangci-lint")
+	}
+}
+
+func TestInsertTarget_NoMarker(t *testing.T) {
+	content := ".PHONY: build\nbuild:\n\techo build\n"
+	target := ".PHONY: tools\ntools:\n\techo tools\n"
+
+	result := InsertTarget(content, target, ".PHONY: golangci-lint")
+	if !strings.Contains(result, ".PHONY: tools") {
+		t.Error("should append target when marker not found")
+	}
+}
+
 func TestReplaceDefine(t *testing.T) {
 	content := "stuff before\n\ndefine go-install-tool\nold content\nold line 2\nendef\n\nstuff after\n"
 	replacement := "define go-install-tool\nnew content\nendef"

@@ -61,6 +61,16 @@ func ReplaceSpecialTarget(content, prefix, replacement string) string {
 	return content[:start] + strings.TrimRight(replacement, "\n") + "\n" + content[end:]
 }
 
+// InsertTarget inserts a target block before the given marker line.
+// If the marker is not found, appends to the end.
+func InsertTarget(content, target, beforeMarker string) string {
+	block := strings.TrimRight(target, "\n") + "\n\n"
+	if idx := strings.Index(content, beforeMarker); idx != -1 {
+		return content[:idx] + block + content[idx:]
+	}
+	return content + "\n" + block
+}
+
 // FindTargetEnd finds where a target block ends, starting search after the given position.
 // A target block ends at: next .PHONY:, next variable assignment, next ## comment,
 // define, or a blank line not followed by a tab-indented line.

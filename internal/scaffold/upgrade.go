@@ -263,12 +263,7 @@ func upgradeMakefile(targetDir string, params Params, layers Layers, dryRun bool
 		managedTargets = append(managedTargets, "helm-lint", "helm-template")
 	}
 
-	for _, name := range managedTargets {
-		block := extractTarget(allRendered, name)
-		if block != "" {
-			result = mf.ReplaceTarget(result, name, block)
-		}
-	}
+	result = replaceOrInsertTargets(result, allRendered, managedTargets)
 
 	// Replace define blocks.
 	defineBlock := extractDefine(allRendered, "go-install-tool")
@@ -376,6 +371,22 @@ func upgradeAgentsSections(targetDir string, params Params, dryRun bool) error {
 	}
 
 	return nil
+}
+
+func replaceOrInsertTargets(content, allRendered string, targets []string) string {
+	for _, name := range targets {
+		block := extractTarget(allRendered, name)
+		if block == "" {
+			continue
+		}
+		updated := mf.ReplaceTarget(content, name, block)
+		if updated == content {
+			content = mf.InsertTarget(content, block, ".PHONY: golangci-lint")
+		} else {
+			content = updated
+		}
+	}
+	return content
 }
 
 // extractVariable extracts a variable assignment line from rendered Makefile content.
