@@ -18,7 +18,7 @@ func BaseSpecs(params Params) []FileSpec {
 }
 
 func PlaceholderDirs() []string {
-	return []string{"internal", "pkg"}
+	return []string{"internal"}
 }
 
 func WritePlaceholders(targetDir string) error {

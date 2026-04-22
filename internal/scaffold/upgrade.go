@@ -64,6 +64,9 @@ func Upgrade(targetDir string, dryRun bool) error {
 	params.CLI = layers.CLI
 	params.Controller = layers.Controller
 	params.Helm = layers.Helm
+	if _, err := os.Stat(filepath.Join(targetDir, "pkg")); err == nil {
+		params.Pkg = true
+	}
 
 	var layerNames []string
 	if layers.CLI {

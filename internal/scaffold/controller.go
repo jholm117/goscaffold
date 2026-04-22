@@ -8,6 +8,7 @@ func ControllerSpecs(params Params) []FileSpec {
 			OutputPath: "internal/controller/reconciler.go", Perm: 0o644},
 		{TemplatePath: "templates/controller/e2e-up.sh.tmpl", OutputPath: "hack/e2e-up.sh", Perm: 0o755},
 		{TemplatePath: "templates/controller/e2e-down.sh.tmpl", OutputPath: "hack/e2e-down.sh", Perm: 0o755},
+		{TemplatePath: "templates/controller/e2e-values.yaml.tmpl", OutputPath: "hack/e2e-values.yaml", Perm: 0o644},
 		{TemplatePath: "templates/controller/kind-config.yaml.tmpl", OutputPath: "hack/kind-config.yaml", Perm: 0o644},
 	}
 }

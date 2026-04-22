@@ -33,7 +33,6 @@ func TestInit_CLIOnly(t *testing.T) {
 		"AGENTS.md",
 		"README.md",
 		"internal/.gitkeep",
-		"pkg/.gitkeep",
 		".goreleaser.yaml",
 		".github/workflows/release.yml",
 	}

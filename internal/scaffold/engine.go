@@ -16,6 +16,7 @@ type Params struct {
 	CLI         bool
 	Controller  bool
 	Helm        bool
+	Pkg         bool
 }
 
 func (p Params) OwnerRepo() string {

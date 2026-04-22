@@ -45,12 +45,15 @@ echo "==> loading image into kind"
 kind load docker-image "${IMAGE_REPO}:${IMAGE_TAG}" --name "${CLUSTER_NAME}"
 {{- if .Helm}}
 
+E2E_VALUES="${E2E_VALUES:-$(dirname "$0")/e2e-values.yaml}"
+
 echo "==> installing/upgrading chart"
 helm upgrade --install "${RELEASE_NAME}" ./charts/{{.ProjectName}} \
     --namespace "${RELEASE_NAMESPACE}" --create-namespace \
     --set "image.repository=${IMAGE_REPO}" \
     --set "image.tag=${IMAGE_TAG}" \
     --set image.pullPolicy=IfNotPresent \
+    -f "${E2E_VALUES}" \
     --wait --timeout 120s
 
 # Force a rollout so changes inside the same-tagged image actually land in pods.

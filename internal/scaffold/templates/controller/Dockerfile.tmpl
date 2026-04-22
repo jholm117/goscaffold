@@ -11,7 +11,9 @@ RUN go mod download
 
 COPY cmd ./cmd
 COPY internal ./internal
+{{- if .Pkg}}
 COPY pkg ./pkg
+{{- end}}
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \

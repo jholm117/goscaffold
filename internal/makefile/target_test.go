@@ -57,6 +57,9 @@ build: ## Build binary.
 	if !strings.Contains(result, "echo custom") {
 		t.Error("custom target should be preserved")
 	}
+	if !strings.Contains(result, "go build -o bin/new ./cmd/new\n\n.PHONY: test") {
+		t.Error("should have blank line between replaced target and next target")
+	}
 }
 
 func TestReplaceTarget_NotFound(t *testing.T) {

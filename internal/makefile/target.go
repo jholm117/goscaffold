@@ -24,7 +24,7 @@ func ReplaceTarget(content, name, replacement string) string {
 	}
 
 	end := FindTargetEnd(content, start+len(marker)-1)
-	return content[:start] + strings.TrimRight(replacement, "\n") + "\n" + content[end:]
+	return content[:start] + strings.TrimRight(replacement, "\n") + "\n\n" + content[end:]
 }
 
 // ReplaceDefine finds a define name ... endef block and replaces it.
