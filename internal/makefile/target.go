@@ -14,6 +14,12 @@ func ReplaceVariable(content, name, replacement string) string {
 	return content
 }
 
+// HasTarget checks whether a .PHONY: name target exists in the content.
+// Uses exact matching to avoid prefix collisions.
+func HasTarget(content, name string) bool {
+	return strings.Contains(content, ".PHONY: "+name+"\n")
+}
+
 // ReplaceTarget finds a .PHONY: name block and replaces through end of recipe.
 // Matches ".PHONY: name\n" exactly to avoid prefix collisions (e.g. "e2e" vs "e2e-up").
 func ReplaceTarget(content, name, replacement string) string {

@@ -135,6 +135,23 @@ e2e-all: e2e-up e2e ## Run all E2E.
 	}
 }
 
+func TestHasTarget(t *testing.T) {
+	content := ".PHONY: build\nbuild: ## Build.\n\tgo build\n\n.PHONY: e2e-up\ne2e-up:\n\techo up\n"
+
+	if !HasTarget(content, "build") {
+		t.Error("should find build")
+	}
+	if !HasTarget(content, "e2e-up") {
+		t.Error("should find e2e-up")
+	}
+	if HasTarget(content, "e2e") {
+		t.Error("should NOT find e2e (prefix of e2e-up)")
+	}
+	if HasTarget(content, "missing") {
+		t.Error("should NOT find missing")
+	}
+}
+
 func TestInsertTarget(t *testing.T) {
 	content := `.PHONY: build
 build: ## Build.

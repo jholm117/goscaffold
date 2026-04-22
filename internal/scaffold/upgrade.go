@@ -432,11 +432,10 @@ func replaceOrInsertTargets(content, allRendered string, targets []string) strin
 		if block == "" {
 			continue
 		}
-		updated := mf.ReplaceTarget(content, name, block)
-		if updated == content {
-			content = mf.InsertTarget(content, block, ".PHONY: golangci-lint")
+		if mf.HasTarget(content, name) {
+			content = mf.ReplaceTarget(content, name, block)
 		} else {
-			content = updated
+			content = mf.InsertTarget(content, block, ".PHONY: golangci-lint")
 		}
 	}
 	return content
