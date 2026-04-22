@@ -53,7 +53,7 @@ setup-hooks: ## Install git hooks.
 
 .PHONY: scaffold-upgrade
 scaffold-upgrade: ## Upgrade infrastructure to latest goscaffold patterns.
-	go run github.com/jholm117/goscaffold@latest upgrade
+	go run github.com/jholm117/goscaffold/cmd/goscaffold@latest upgrade
 
 .PHONY: clean
 clean: ## Remove build artifacts.
