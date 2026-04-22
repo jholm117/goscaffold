@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
+# Bootstrap a local kind cluster with {{.ProjectName}} installed, ready for E2E tests.
+#
+# Idempotent: safe to run repeatedly. Rebuilds the image, reloads it into the
+# cluster, and upgrades the Helm release on each invocation.
 set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-{{.ProjectName}}-e2e}"
 IMAGE_REPO="${IMAGE_REPO:-{{.ProjectName}}}"
 IMAGE_TAG="${IMAGE_TAG:-e2e}"
+RELEASE_NAME="${RELEASE_NAME:-{{.ProjectName}}}"
+RELEASE_NAMESPACE="${RELEASE_NAMESPACE:-{{.ProjectName}}}"
 KIND_CONFIG="${KIND_CONFIG:-$(dirname "$0")/kind-config.yaml}"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,6 +25,9 @@ require() {
 require kind
 require docker
 require kubectl
+{{- if .Helm}}
+require helm
+{{- end}}
 
 if ! kind get clusters | grep -qx "${CLUSTER_NAME}"; then
     echo "==> creating kind cluster ${CLUSTER_NAME}"
@@ -34,5 +43,20 @@ docker build -t "${IMAGE_REPO}:${IMAGE_TAG}" .
 
 echo "==> loading image into kind"
 kind load docker-image "${IMAGE_REPO}:${IMAGE_TAG}" --name "${CLUSTER_NAME}"
+{{- if .Helm}}
+
+echo "==> installing/upgrading chart"
+helm upgrade --install "${RELEASE_NAME}" ./charts/{{.ProjectName}} \
+    --namespace "${RELEASE_NAMESPACE}" --create-namespace \
+    --set "image.repository=${IMAGE_REPO}" \
+    --set "image.tag=${IMAGE_TAG}" \
+    --set image.pullPolicy=IfNotPresent \
+    --wait --timeout 120s
+
+# Force a rollout so changes inside the same-tagged image actually land in pods.
+echo "==> restarting deployment to pick up the new image"
+kubectl -n "${RELEASE_NAMESPACE}" rollout restart deployment/"${RELEASE_NAME}"
+kubectl -n "${RELEASE_NAMESPACE}" rollout status deployment/"${RELEASE_NAME}" --timeout 120s
+{{- end}}
 
 echo "==> ready"
