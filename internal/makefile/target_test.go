@@ -93,6 +93,45 @@ build: ## Build.
 	}
 }
 
+func TestReplaceTarget_PrefixMatch(t *testing.T) {
+	content := `.PHONY: e2e-up
+e2e-up: ## Bootstrap kind cluster.
+	./hack/e2e-up.sh
+
+.PHONY: e2e-down
+e2e-down: ## Delete kind cluster.
+	./hack/e2e-down.sh
+
+.PHONY: e2e
+e2e: ## Run E2E tests.
+	go test -tags e2e ./test/e2e/...
+
+.PHONY: e2e-all
+e2e-all: e2e-up e2e ## Run all E2E.
+	echo done
+`
+	replacement := ".PHONY: e2e\ne2e: e2e-up ## Run E2E tests.\n" +
+		"\tgo test ./test/e2e/ -v -tags e2e -timeout 10m\n"
+
+	result := ReplaceTarget(content, "e2e", replacement)
+
+	if !strings.Contains(result, "go test ./test/e2e/ -v -tags e2e -timeout 10m") {
+		t.Error("e2e target should be replaced")
+	}
+	if !strings.Contains(result, "./hack/e2e-up.sh") {
+		t.Error("e2e-up target should be preserved")
+	}
+	if !strings.Contains(result, "./hack/e2e-down.sh") {
+		t.Error("e2e-down target should be preserved")
+	}
+	if !strings.Contains(result, "e2e-all") {
+		t.Error("e2e-all target should be preserved")
+	}
+	if strings.Contains(result, "go test -tags e2e ./test/e2e/...") {
+		t.Error("old e2e recipe should be gone")
+	}
+}
+
 func TestReplaceDefine(t *testing.T) {
 	content := "stuff before\n\ndefine go-install-tool\nold content\nold line 2\nendef\n\nstuff after\n"
 	replacement := "define go-install-tool\nnew content\nendef"

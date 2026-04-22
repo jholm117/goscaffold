@@ -15,14 +15,15 @@ func ReplaceVariable(content, name, replacement string) string {
 }
 
 // ReplaceTarget finds a .PHONY: name block and replaces through end of recipe.
+// Matches ".PHONY: name\n" exactly to avoid prefix collisions (e.g. "e2e" vs "e2e-up").
 func ReplaceTarget(content, name, replacement string) string {
-	marker := ".PHONY: " + name
+	marker := ".PHONY: " + name + "\n"
 	start := strings.Index(content, marker)
 	if start == -1 {
 		return content
 	}
 
-	end := FindTargetEnd(content, start+len(marker))
+	end := FindTargetEnd(content, start+len(marker)-1)
 	return content[:start] + strings.TrimRight(replacement, "\n") + "\n" + content[end:]
 }
 

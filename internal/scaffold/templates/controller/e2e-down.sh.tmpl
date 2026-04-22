@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Delete the local kind cluster used for {{.ProjectName}} E2E tests.
 set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-{{.ProjectName}}-e2e}"

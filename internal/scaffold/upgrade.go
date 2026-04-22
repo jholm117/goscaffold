@@ -387,12 +387,12 @@ func extractVariable(content, name string) string {
 
 // extractTarget extracts a .PHONY target block from rendered Makefile content.
 func extractTarget(content, name string) string {
-	marker := ".PHONY: " + name
+	marker := ".PHONY: " + name + "\n"
 	start := strings.Index(content, marker)
 	if start == -1 {
 		return ""
 	}
-	end := min(mf.FindTargetEnd(content, start+len(marker)), len(content))
+	end := min(mf.FindTargetEnd(content, start+len(marker)-1), len(content))
 	return strings.TrimRight(content[start:end], "\n") + "\n"
 }
 
