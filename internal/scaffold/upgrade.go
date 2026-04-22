@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -144,6 +145,15 @@ func upgradeGoMod(targetDir string, dryRun bool) error {
 		return fmt.Errorf("write go.mod: %w", err)
 	}
 	fmt.Println("  gomod     go.mod (go " + GoVersion + ")")
+
+	fmt.Println("  tidy      go mod tidy")
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = targetDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("go mod tidy: %w", err)
+	}
 	return nil
 }
 
