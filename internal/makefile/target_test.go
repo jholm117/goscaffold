@@ -152,6 +152,20 @@ func TestHasTarget(t *testing.T) {
 	}
 }
 
+func TestHasTarget_BareTarget(t *testing.T) {
+	content := "build:\n\tgo build ./...\n\ntest:\n\tgo test ./...\n"
+
+	if !HasTarget(content, "build") {
+		t.Error("should find bare build target")
+	}
+	if !HasTarget(content, "test") {
+		t.Error("should find bare test target")
+	}
+	if HasTarget(content, "testing") {
+		t.Error("should NOT find testing (prefix of test line content)")
+	}
+}
+
 func TestInsertTarget(t *testing.T) {
 	content := `.PHONY: build
 build: ## Build.

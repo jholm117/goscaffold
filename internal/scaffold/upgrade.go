@@ -65,6 +65,7 @@ func Upgrade(targetDir string, dryRun bool) error {
 
 	layers := DetectLayers(targetDir)
 	params.GoVersion = GoVersion
+	params.GitOwnerRepo = detectGitOwnerRepo(targetDir)
 	params.CLI = layers.CLI
 	params.Controller = layers.Controller
 	params.Helm = layers.Helm
@@ -509,4 +510,25 @@ func extractMarkdownSection(content, header string) string {
 		pos += len(line) + 1
 	}
 	return strings.TrimRight(content[start:], "\n") + "\n"
+}
+
+func detectGitOwnerRepo(dir string) string {
+	cmd := exec.Command("git", "remote", "get-url", "origin")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	url := strings.TrimSpace(string(out))
+	url = strings.TrimSuffix(url, ".git")
+
+	// https://github.com/owner/repo
+	if _, after, ok := strings.Cut(url, "github.com/"); ok {
+		return after
+	}
+	// git@github.com:owner/repo
+	if _, after, ok := strings.Cut(url, "github.com:"); ok {
+		return after
+	}
+	return ""
 }

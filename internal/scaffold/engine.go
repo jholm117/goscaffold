@@ -11,16 +11,20 @@ import (
 )
 
 type Params struct {
-	ProjectName string
-	Module      string
-	GoVersion   string
-	CLI         bool
-	Controller  bool
-	Helm        bool
-	Pkg         bool
+	ProjectName  string
+	Module       string
+	GoVersion    string
+	GitOwnerRepo string
+	CLI          bool
+	Controller   bool
+	Helm         bool
+	Pkg          bool
 }
 
 func (p Params) OwnerRepo() string {
+	if p.GitOwnerRepo != "" {
+		return p.GitOwnerRepo
+	}
 	parts := strings.SplitN(p.Module, "/", 2)
 	if len(parts) == 2 {
 		return parts[1]

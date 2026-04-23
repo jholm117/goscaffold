@@ -14,10 +14,19 @@ func ReplaceVariable(content, name, replacement string) string {
 	return content
 }
 
-// HasTarget checks whether a .PHONY: name target exists in the content.
-// Uses exact matching to avoid prefix collisions.
+// HasTarget checks whether a target exists in the content.
+// Checks for .PHONY: name and bare name: patterns.
+// Uses line-level matching to avoid prefix collisions.
 func HasTarget(content, name string) bool {
-	return strings.Contains(content, ".PHONY: "+name+"\n")
+	if strings.Contains(content, ".PHONY: "+name+"\n") {
+		return true
+	}
+	for line := range strings.SplitSeq(content, "\n") {
+		if line == name+":" || strings.HasPrefix(line, name+":") {
+			return true
+		}
+	}
+	return false
 }
 
 // ReplaceTarget finds a .PHONY: name block and replaces through end of recipe.
@@ -70,11 +79,15 @@ func ReplaceSpecialTarget(content, prefix, replacement string) string {
 // InsertTarget inserts a target block before the given marker line.
 // If the marker is not found, appends to the end.
 func InsertTarget(content, target, beforeMarker string) string {
-	block := strings.TrimRight(target, "\n") + "\n\n"
+	block := strings.TrimRight(target, "\n") + "\n"
 	if idx := strings.Index(content, beforeMarker); idx != -1 {
-		return content[:idx] + block + content[idx:]
+		prefix := content[:idx]
+		if !strings.HasSuffix(prefix, "\n\n") {
+			block += "\n"
+		}
+		return prefix + block + content[idx:]
 	}
-	return content + "\n" + block
+	return content + "\n\n" + block
 }
 
 // FindTargetEnd finds where a target block ends, starting search after the given position.
