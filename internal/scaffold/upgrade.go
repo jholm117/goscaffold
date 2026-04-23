@@ -361,10 +361,11 @@ func upgradeReadmeBadges(targetDir string, params Params, dryRun bool) error {
 		return nil // README not found is not an error
 	}
 
+	repo := "github.com/" + params.OwnerRepo()
 	badges := fmt.Sprintf(
 		"[![CI](https://%s/actions/workflows/ci.yml/badge.svg)](https://%s/actions/workflows/ci.yml)\n"+
 			"[![Release](https://img.shields.io/github/v/release/%s)](https://%s/releases/latest)",
-		params.Module, params.Module, params.OwnerRepo(), params.Module,
+		repo, repo, params.OwnerRepo(), repo,
 	)
 
 	result := markdown.PatchBadges(string(content), badges)
